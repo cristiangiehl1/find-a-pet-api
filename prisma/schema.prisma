@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Age {
+  PUPPY
+  JUNIOR
+  ADULT
+  MATURE_ADULT
+  SENIOR
+}
+
+enum Size {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum Energy {
+  VERY_LOW // Very low energy, prefers minimal activity
+  LOW // Low energy, enjoys short walks and relaxing
+  MODERATE // Moderate energy, enjoys regular exercise and playtime
+  HIGH // High energy, needs vigorous exercise and frequent activities
+  VERY_HIGH // Very high energy, requires intense physical activity and mental stimulation
+}
+
+enum Independence {
+  LOW // low = needs attention all the time
+  MEDIUM // medium = can be alone for a few hours
+  HIGH // high = very independent, can be alone most of the day
+}
+
+enum Space {
+  SMALL_SPACE // (suitable for apartments)
+  MEDIUM_SPACE // Medium space (needs a small yard)
+  LARGE_SPACE // Large space (requires a big yard or open space)
+}
+
+model Org {
+  id String @id @default(uuid())
+
+  name          String
+  owner         String
+  email         String @unique
+  whatsapp      String
+  password_hash String
+
+  cep          String
+  address      String
+  state        String
+  city         String
+  neighborhood String
+  street       String
+
+  latitude  Decimal
+  longitude Decimal
+
+  created_at DateTime @default(now())
+
+  pets Pet[]
+
+  @@map("orgs")
+}
+
+model Pet {
+  id String @id @default(uuid())
+
+  name         String
+  about        String?
+  age          Age
+  size         Size
+  energy       Energy
+  independence Independence
+  space        Space
+
+  created_at DateTime @default(now())
+
+  org    Org    @relation(fields: [org_id], references: [id])
+  org_id String
+
+  requirements Requirement[]
+  photos       Photo[]
+
+  @@map("pets")
+}
+
+model Requirement {
+  id String @id @default(uuid())
+
+  requirement String
+
+  pet    Pet    @relation(fields: [pet_id], references: [id])
+  pet_id String
+
+  @@map("requirements")
+}
+
+model Photo {
+  id String @id @default(uuid())
+
+  url String
+
+  pet    Pet    @relation(fields: [pet_id], references: [id])
+  pet_id String
+
+  @@map("photos")
+}
