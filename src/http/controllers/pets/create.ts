@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
-import { OrgWithSameEmailError } from '@/services/errors/org-with-same-email-error'
 import { makeCreatePetService } from '@/services/factories/make-create-pet-service'
 
 export async function createPet(request: FastifyRequest, reply: FastifyReply) {
@@ -29,28 +28,20 @@ export async function createPet(request: FastifyRequest, reply: FastifyReply) {
     photos,
   } = createPetBodySchema.parse(request.body)
 
-  try {
-    const createPetService = makeCreatePetService()
+  const createPetService = makeCreatePetService()
 
-    await createPetService.execute({
-      name,
-      about,
-      age,
-      size,
-      energy,
-      independence,
-      space,
-      orgId: request.user.sub,
-      photos,
-      requirements,
-    })
-  } catch (err) {
-    if (err instanceof OrgWithSameEmailError) {
-      return reply.status(409).send({ message: err.message })
-    }
+  const { pet } = await createPetService.execute({
+    name,
+    about,
+    age,
+    size,
+    energy,
+    independence,
+    space,
+    orgId: request.user.sub,
+    photos,
+    requirements,
+  })
 
-    throw err
-  }
-
-  return reply.status(201).send()
+  return reply.status(201).send({ petId: pet.id })
 }
